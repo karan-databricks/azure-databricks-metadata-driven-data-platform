@@ -445,6 +445,10 @@ def _read_fact_order_source() -> DataFrame:
     "valid_product_id",
     "product_id IS NOT NULL",
 )
+@dp.expect_or_fail(
+    "valid_quantity",
+    "quantity IS NOT NULL AND quantity > 0",
+)
 def fact_order() -> DataFrame:
     """
     Produces one Silver fact row per product line within an order.
