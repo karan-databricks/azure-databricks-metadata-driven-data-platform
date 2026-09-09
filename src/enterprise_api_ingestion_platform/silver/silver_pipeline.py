@@ -429,6 +429,22 @@ def _read_fact_order_source() -> DataFrame:
         "Silver order-line fact derived from OpenAPI Orders."
     ),
 )
+@dp.expect_or_fail(
+    "valid_order_id",
+    "order_id IS NOT NULL",
+)
+@dp.expect_or_fail(
+    "valid_line_number",
+    "line_number IS NOT NULL",
+)
+@dp.expect_or_fail(
+    "valid_customer_id",
+    "customer_id IS NOT NULL",
+)
+@dp.expect_or_fail(
+    "valid_product_id",
+    "product_id IS NOT NULL",
+)
 def fact_order() -> DataFrame:
     """
     Produces one Silver fact row per product line within an order.
