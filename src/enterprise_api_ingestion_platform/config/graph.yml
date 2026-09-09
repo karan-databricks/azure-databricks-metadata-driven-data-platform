@@ -1,0 +1,30 @@
+api:
+  name: graph_users
+
+source:
+  system: microsoft_graph
+
+landing:
+  volume: /Volumes/adb_api_ingestion_dev/bronze/landing_volume
+  path: graph/users
+
+bronze:
+  catalog: adb_api_ingestion_dev
+  schema: karan_vsk
+  table: graph_users_bronze
+
+silver:
+  catalog: adb_api_ingestion_dev
+  schema: karan_vsk
+  table: graph_users_silver
+
+primary_key:
+  - id
+
+options:
+  multiline: true
+  format: json
+
+metadata:
+  owner: Karan Navalur
+  environment: dev

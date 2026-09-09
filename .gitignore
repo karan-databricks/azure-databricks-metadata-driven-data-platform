@@ -1,0 +1,35 @@
+# Databricks
+.databricks/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+
+# Build artifacts
+build/
+dist/
+*.whl
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.secret
+
+# IDE
+.vscode/
+.idea/
+
+# Local development
+scratch/
+explorations/
+
+# OS
+.DS_Store
+Thumbs.db

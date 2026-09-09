@@ -1,0 +1,19 @@
+# resources/pipelines/gold.pipeline.yml
+
+resources:
+  pipelines:
+    gold_pipeline:
+      name: enterprise-api-gold-${bundle.target}
+
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+
+      serverless: true
+
+      continuous: false
+
+      libraries:
+        - file:
+            path: ../../src/enterprise_api_ingestion_platform/gold/gold_pipeline.py
+        - file:
+            path: ../../src/enterprise_api_ingestion_platform/gold/transformations.py

@@ -1,0 +1,25 @@
+# resources/pipelines/bronze.pipeline.yml
+
+resources:
+  pipelines:
+    bronze_pipeline:
+      name: enterprise-api-bronze-${bundle.target}
+
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+
+      serverless: true
+
+      continuous: false
+
+      configuration:
+        LANDING_CATALOG: ${var.landing_catalog}
+        LANDING_SCHEMA: ${var.landing_schema}
+        LANDING_VOLUME: ${var.landing_volume}
+
+        METADATA_CATALOG: ${var.catalog}
+        METADATA_SCHEMA: config
+
+      libraries:
+        - file:
+            path: ../../src/enterprise_api_ingestion_platform/bronze_pipeline/bronze_pipeline.py

@@ -1,0 +1,69 @@
+# databricks.yml
+
+bundle:
+  name: enterprise_api_ingestion_platform
+  uuid: 2b9b461d-df4d-479e-af7e-3a9a2fa7c7d9
+
+include:
+  - resources/**/*.yml
+
+artifacts:
+  python_artifact:
+    type: whl
+    build: uv build --wheel
+
+variables:
+  catalog:
+    description: The catalog to use
+
+  schema:
+    description: The schema to use
+
+  environment:
+    description: Deployment environment
+
+  landing_catalog:
+    description: Unity Catalog catalog containing the landing volume
+
+  landing_schema:
+    description: Unity Catalog schema containing the landing volume
+
+  landing_volume:
+    description: Unity Catalog landing volume name
+
+targets:
+  dev:
+    mode: development
+    default: true
+
+    workspace:
+      host: https://dbc-09b52ae8-23ca.cloud.databricks.com
+
+    variables:
+      catalog: workspace
+      schema: ${workspace.current_user.short_name}
+      environment: dev
+
+      landing_catalog: workspace
+      landing_schema: landing
+      landing_volume: landing_volume
+
+  prod:
+    mode: production
+
+    workspace:
+      host: https://dbc-09b52ae8-23ca.cloud.databricks.com
+      root_path: /Workspace/Users/karan_vsk@hotmail.com/.bundle/${bundle.name}/${bundle.target}
+
+    variables:
+      catalog: workspace
+      schema: default
+      environment: prod
+
+      landing_catalog: workspace
+      landing_schema: landing
+      landing_volume: landing_volume
+
+    permissions:
+      - user_name: karan_vsk@hotmail.com
+        level: CAN_MANAGE

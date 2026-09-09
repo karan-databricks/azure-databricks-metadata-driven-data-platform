@@ -1,0 +1,15 @@
+resources:
+  pipelines:
+    silver_pipeline:
+      name: enterprise-api-silver-${bundle.target}
+
+      catalog: ${var.catalog}
+      schema: ${var.schema}
+
+      serverless: true
+
+      continuous: false
+
+      libraries:
+        - file:
+            path: ../../src/enterprise_api_ingestion_platform/silver/silver_pipeline.py

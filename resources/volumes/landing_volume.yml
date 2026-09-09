@@ -1,0 +1,8 @@
+resources:
+  volumes:
+    landing_volume:
+      name: ${var.landing_volume}
+      catalog_name: ${var.landing_catalog}
+      schema_name: ${var.landing_schema}
+      volume_type: MANAGED
+      comment: Raw API landing volume
