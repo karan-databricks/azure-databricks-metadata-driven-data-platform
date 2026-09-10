@@ -38,7 +38,7 @@ jobs:
         run: uv run pytest
 
       - name: Install Databricks CLI
-        uses: databricks/setup-cli@v0.9.0
+        uses: databricks/setup-cli@v1.8.0
 
       - name: Validate Databricks bundle
         run: databricks bundle validate -t dev
