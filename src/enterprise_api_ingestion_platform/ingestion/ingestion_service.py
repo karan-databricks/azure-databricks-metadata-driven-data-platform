@@ -54,6 +54,9 @@ class IngestionService:
         status = "SUCCESS"
 
         landing_file: str | None = None
+        landing_file_size_bytes: int | None = None
+        records_read: int | None = None
+        pages_read: int | None = None
 
         error_message: str | None = None
 
@@ -74,11 +77,21 @@ class IngestionService:
             )
 
             landing_file = landing_result.landing_file
+            landing_file_size_bytes = (
+                landing_result.landing_file_size_bytes
+            )
+            records_read = landing_result.records_read
+            pages_read = landing_result.pages_read
 
             self._logger.info(
-                "Landing completed. run_id=%s landing_file=%s",
+                "Landing completed. "
+                "run_id=%s landing_file=%s records_read=%s pages_read=%s "
+                "landing_file_size_bytes=%s",
                 run_id,
                 landing_file,
+                records_read,
+                pages_read,
+                landing_file_size_bytes,
             )
 
             self._checkpoint_service.save_checkpoint(
@@ -109,7 +122,8 @@ class IngestionService:
             ).total_seconds()
 
             self._logger.info(
-                "Writing audit record. run_id=%s status=%s duration_seconds=%.2f",
+                "Writing audit record. "
+                "run_id=%s status=%s duration_seconds=%.2f",
                 run_id,
                 status,
                 duration_seconds,
@@ -122,11 +136,19 @@ class IngestionService:
                 start_time=start_time,
                 end_time=end_time,
                 status=status,
-                records_read=None,
+                records_read=records_read,
                 records_written=None,
+                pages_read=pages_read,
+                schema_version=metadata.schema_version,
                 duration_seconds=duration_seconds,
-                error_message=error_message,
                 landing_file=landing_file,
+                landing_file_size_bytes=landing_file_size_bytes,
+                failure_stage=None,
+                failure_type=None,
+                http_status=None,
+                retry_count=None,
+                total_attempts=None,
+                error_message=error_message,
             )
 
             self._logger.info(

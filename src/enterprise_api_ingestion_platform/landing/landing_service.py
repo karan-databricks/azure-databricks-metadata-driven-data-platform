@@ -60,7 +60,7 @@ class LandingService:
         Returns
         -------
         LandingResult
-            Result of the landing write.
+            Result of the landing write including ingestion metrics.
         """
 
         auth_provider = AuthenticationFactory.create(
@@ -114,8 +114,17 @@ class LandingService:
                 chunks=chunks,
             )
 
+            landing_file_size_bytes = (
+                self._landing_writer.get_file_size(
+                    file_path=landing_file,
+                )
+            )
+
             return LandingResult(
                 landing_file=landing_file,
+                records_read=None,
+                pages_read=None,
+                landing_file_size_bytes=landing_file_size_bytes,
             )
 
         pagination = PaginationFactory.create(
@@ -140,6 +149,10 @@ class LandingService:
             params=params,
         )
 
+        first_page_record_count = self._count_records(
+            response_json,
+        )
+
         if not pagination.has_next_page(
             response_json,
         ):
@@ -148,15 +161,26 @@ class LandingService:
                 payload=response_json,
             )
 
+            landing_file_size_bytes = (
+                self._landing_writer.get_file_size(
+                    file_path=landing_file,
+                )
+            )
+
             return LandingResult(
                 landing_file=landing_file,
                 checkpoint_state=self._get_cursor(
                     metadata=metadata,
                     response_json=response_json,
                 ),
+                records_read=first_page_record_count,
+                pages_read=1,
+                landing_file_size_bytes=landing_file_size_bytes,
             )
 
         pages: list[Any] = [response_json]
+
+        records_read = first_page_record_count
 
         checkpoint_state = self._get_cursor(
             metadata=metadata,
@@ -180,6 +204,10 @@ class LandingService:
 
             pages.append(response_json)
 
+            records_read += self._count_records(
+                response_json,
+            )
+
             cursor = self._get_cursor(
                 metadata=metadata,
                 response_json=response_json,
@@ -193,10 +221,52 @@ class LandingService:
             payload=pages,
         )
 
+        landing_file_size_bytes = (
+            self._landing_writer.get_file_size(
+                file_path=landing_file,
+            )
+        )
+
         return LandingResult(
             landing_file=landing_file,
             checkpoint_state=checkpoint_state,
+            records_read=records_read,
+            pages_read=len(pages),
+            landing_file_size_bytes=landing_file_size_bytes,
         )
+
+    @staticmethod
+    def _count_records(
+        response_json: Any,
+    ) -> int:
+        """
+        Returns the number of API records represented by a response.
+
+        A top-level list is treated as the record collection.
+
+        For dictionary responses, the method looks for common
+        collection fields. If no collection can be identified,
+        the response is treated as one logical API response record.
+        """
+
+        if isinstance(response_json, list):
+            return len(response_json)
+
+        if isinstance(response_json, dict):
+            for field_name in (
+                "data",
+                "results",
+                "records",
+                "items",
+            ):
+                value = response_json.get(field_name)
+
+                if isinstance(value, list):
+                    return len(value)
+
+            return 1
+
+        return 1
 
     @staticmethod
     def _get_cursor(

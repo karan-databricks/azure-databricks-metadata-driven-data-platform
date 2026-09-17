@@ -3,6 +3,7 @@
 bundle:
   name: enterprise_api_ingestion_platform
   uuid: 2b9b461d-df4d-479e-af7e-3a9a2fa7c7d9
+  engine: direct
 
 include:
   - resources/**/*.yml

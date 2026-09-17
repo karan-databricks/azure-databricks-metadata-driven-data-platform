@@ -1,5 +1,4 @@
 # src/enterprise_api_ingestion_platform/storage/databricks_storage_writer.py
-
 from __future__ import annotations
 
 import json
@@ -8,6 +7,7 @@ from pathlib import PurePosixPath
 from typing import Any, Iterable
 from uuid import uuid4
 
+from databricks.sdk.runtime import dbutils
 from pyspark.sql import SparkSession
 
 from enterprise_api_ingestion_platform.logging.logger import get_logger
@@ -56,9 +56,13 @@ class DatabricksManagedStorageWriter(StorageWriter):
     ) -> str:
         """
         Writes a buffered API response as a raw JSON file.
+
+        Returns
+        -------
+        str
+            Fully qualified path of the written JSON file.
         """
 
-        target_directory = self._target_directory(metadata)
         target_file = self._target_file(metadata)
 
         serialized_payload = json.dumps(
@@ -72,13 +76,19 @@ class DatabricksManagedStorageWriter(StorageWriter):
             content=serialized_payload,
         )
 
-        logger.info(
-            "Raw landing write completed. api=%s target=%s",
-            metadata.api_name,
-            target_file,
+        landing_file_size_bytes = self.get_file_size(
+            file_path=target_file,
         )
 
-        return target_directory
+        logger.info(
+            "Raw landing write completed. "
+            "api=%s target=%s size_bytes=%s",
+            metadata.api_name,
+            target_file,
+            landing_file_size_bytes,
+        )
+
+        return target_file
 
     def write_stream(
         self,
@@ -87,6 +97,11 @@ class DatabricksManagedStorageWriter(StorageWriter):
     ) -> str:
         """
         Writes a streamed JSON response as a raw JSON file.
+
+        Returns
+        -------
+        str
+            Fully qualified path of the written JSON file.
         """
 
         payload = b"".join(
@@ -115,6 +130,35 @@ class DatabricksManagedStorageWriter(StorageWriter):
             payload=decoded_payload,
         )
 
+    def get_file_size(
+        self,
+        file_path: str,
+    ) -> int:
+        """
+        Returns the size of a previously written file in bytes.
+
+        Unity Catalog Volume file metadata is obtained through
+        Databricks file-system utilities.
+        """
+
+        file_info = dbutils.fs.ls(
+            file_path,
+        )
+
+        if not file_info:
+            raise FileNotFoundError(
+                f"Landing file was not found: {file_path}"
+            )
+
+        entry = file_info[0]
+
+        if entry.isDir():
+            raise IsADirectoryError(
+                f"Landing path is a directory, not a file: {file_path}"
+            )
+
+        return int(entry.size)
+
     def _target_directory(
         self,
         metadata: ApiMetadata,
@@ -139,7 +183,7 @@ class DatabricksManagedStorageWriter(StorageWriter):
         metadata: ApiMetadata,
     ) -> str:
         """
-        Builds a unique JSON object path for one ingestion run.
+        Builds a unique JSON file path for one ingestion run.
         """
 
         timestamp = datetime.now(
@@ -157,21 +201,19 @@ class DatabricksManagedStorageWriter(StorageWriter):
             )
         )
 
+    @staticmethod
     def _write_json(
-        self,
         target_file: str,
         content: str,
     ) -> None:
         """
-        Writes JSON through the Spark filesystem APIs available to the
-        Databricks execution environment.
+        Writes JSON directly as a file in the Unity Catalog Volume.
         """
 
-        self._spark.createDataFrame(
-            [(content,)],
-            ["value"],
-        ).write.mode("overwrite").text(
+        dbutils.fs.put(
             target_file,
+            content,
+            True,
         )
 
     @staticmethod

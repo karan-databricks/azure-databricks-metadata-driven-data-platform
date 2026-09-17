@@ -60,6 +60,8 @@ class ApiMetadata:
 
     # Metadata
     enabled: bool = True
+    schema_version: int = 1
     created_by: Optional[str] = None
     created_ts: Optional[datetime] = None
     updated_ts: Optional[datetime] = None
+    

@@ -42,3 +42,13 @@ class StorageWriter(ABC):
             Fully qualified path of the written file.
         """
         raise NotImplementedError
+        
+    @abstractmethod
+    def get_file_size(
+        self,
+        file_path: str,
+    ) -> int:
+        """
+        Returns the size of a previously written file in bytes.
+        """
+        raise NotImplementedError

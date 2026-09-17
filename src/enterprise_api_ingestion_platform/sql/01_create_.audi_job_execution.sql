@@ -12,11 +12,29 @@ CREATE TABLE IF NOT EXISTS workspace.audit.job_execution
 
     status STRING,
 
-    records_read BIGINT,
+    records_read INT,
 
-    records_written BIGINT,
+    records_written INT,
+
+    pages_read INT,
+	
+	schema_version INT,
 
     duration_seconds DOUBLE,
+
+    landing_file STRING,
+
+    landing_file_size_bytes BIGINT,
+
+    failure_stage STRING,
+
+    failure_type STRING,
+
+    http_status INT,
+
+    retry_count INT,
+
+    total_attempts INT,
 
     error_message STRING
 )

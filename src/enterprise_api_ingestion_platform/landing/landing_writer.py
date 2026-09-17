@@ -1,21 +1,16 @@
+# src/enterprise_api_ingestion_platform/landing/landing_writer.py
+
 from __future__ import annotations
 
-import logging
-from typing import Any, Iterable
+from typing import Iterable
 
-from enterprise_api_ingestion_platform.models.api_metadata import (
-    ApiMetadata,
-)
-from enterprise_api_ingestion_platform.storage.storage_writer import (
-    StorageWriter,
-)
-
-logger = logging.getLogger(__name__)
+from enterprise_api_ingestion_platform.models.api_metadata import ApiMetadata
+from enterprise_api_ingestion_platform.storage.storage_writer import StorageWriter
 
 
 class LandingWriter:
     """
-    Writes raw API responses to the Landing zone.
+    Delegates landing-file operations to the configured storage writer.
     """
 
     def __init__(
@@ -27,16 +22,11 @@ class LandingWriter:
     def write(
         self,
         metadata: ApiMetadata,
-        payload: Any,
+        payload: object,
     ) -> str:
         """
-        Writes a buffered payload.
+        Writes a complete payload to the configured landing storage.
         """
-
-        logger.info(
-            "LandingWriter.write() invoked for api=%s",
-            metadata.api_name,
-        )
 
         return self._storage_writer.write(
             metadata=metadata,
@@ -49,15 +39,22 @@ class LandingWriter:
         chunks: Iterable[bytes],
     ) -> str:
         """
-        Writes a streamed payload.
+        Writes a streamed payload to the configured landing storage.
         """
-
-        logger.info(
-            "LandingWriter.write_stream() invoked for api=%s",
-            metadata.api_name,
-        )
 
         return self._storage_writer.write_stream(
             metadata=metadata,
             chunks=chunks,
+        )
+
+    def get_file_size(
+        self,
+        file_path: str,
+    ) -> int:
+        """
+        Returns the size of a landed file in bytes.
+        """
+
+        return self._storage_writer.get_file_size(
+            file_path=file_path,
         )

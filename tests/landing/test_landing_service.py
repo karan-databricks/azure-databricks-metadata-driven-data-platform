@@ -31,6 +31,7 @@ def test_ingest_without_pagination_writes_payload() -> None:
 
     http_client.request.return_value = payload
     landing_writer.write.return_value = "/landing/orders"
+    landing_writer.get_file_size.return_value = 1234
 
     service = LandingService(
         http_client=http_client,
@@ -42,6 +43,9 @@ def test_ingest_without_pagination_writes_payload() -> None:
     assert isinstance(result, LandingResult)
     assert result.landing_file == "/landing/orders"
     assert result.checkpoint_state is None
+    assert result.records_read == 2
+    assert result.pages_read == 1
+    assert result.landing_file_size_bytes == 1234
 
     http_client.request.assert_called_once_with(
         method="GET",
@@ -54,7 +58,12 @@ def test_ingest_without_pagination_writes_payload() -> None:
         metadata=create_metadata(),
         payload=payload,
     )
-    
+
+    landing_writer.get_file_size.assert_called_once_with(
+        file_path="/landing/orders",
+    )
+
+
 def test_ingest_with_cursor_pagination_follows_pages() -> None:
     http_client = MagicMock(spec=HttpClient)
     landing_writer = MagicMock()
@@ -74,6 +83,7 @@ def test_ingest_with_cursor_pagination_follows_pages() -> None:
     ]
 
     landing_writer.write.return_value = "/landing/orders"
+    landing_writer.get_file_size.return_value = 1234
 
     metadata = ApiMetadata(
         api_id="orders-api",
@@ -98,6 +108,9 @@ def test_ingest_with_cursor_pagination_follows_pages() -> None:
     assert result == LandingResult(
         landing_file="/landing/orders",
         checkpoint_state="cursor-b",
+        records_read=3,
+        pages_read=3,
+        landing_file_size_bytes=1234,
     )
 
     assert http_client.request.call_count == 3
@@ -132,7 +145,12 @@ def test_ingest_with_cursor_pagination_follows_pages() -> None:
             },
         ],
     )
-    
+
+    landing_writer.get_file_size.assert_called_once_with(
+        file_path="/landing/orders",
+    )
+
+
 def test_ingest_with_initial_cursor_uses_cursor_on_first_request() -> None:
     http_client = MagicMock(spec=HttpClient)
     landing_writer = MagicMock()
@@ -142,6 +160,7 @@ def test_ingest_with_initial_cursor_uses_cursor_on_first_request() -> None:
     }
 
     landing_writer.write.return_value = "/landing/orders"
+    landing_writer.get_file_size.return_value = 1234
 
     metadata = ApiMetadata(
         api_id="orders-api",
@@ -169,6 +188,9 @@ def test_ingest_with_initial_cursor_uses_cursor_on_first_request() -> None:
     assert result == LandingResult(
         landing_file="/landing/orders",
         checkpoint_state=None,
+        records_read=1,
+        pages_read=1,
+        landing_file_size_bytes=1234,
     )
 
     http_client.request.assert_called_once_with(
@@ -186,4 +208,8 @@ def test_ingest_with_initial_cursor_uses_cursor_on_first_request() -> None:
         payload={
             "data": [{"id": 1}],
         },
+    )
+
+    landing_writer.get_file_size.assert_called_once_with(
+        file_path="/landing/orders",
     )
