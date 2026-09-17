@@ -1,8 +1,13 @@
 # Enterprise API Ingestion Platform
 
-A metadata-driven API ingestion and data engineering platform built with **Python, Azure Databricks, Lakeflow Declarative Pipelines, Unity Catalog, Delta Lake, and Databricks Asset Bundles (DAB)**.
+A metadata-driven API ingestion and data engineering platform built with
+**Python, Azure Databricks, Lakeflow Declarative Pipelines, Unity
+Catalog, Delta Lake, and Databricks Asset Bundles (DAB)**.
 
-The platform is designed to ingest APIs through configuration rather than source-code changes, land raw responses, transform data through a Medallion architecture, apply data-quality rules, maintain ingestion checkpoints, and validate data consistency across processing layers.
+The platform is designed to ingest APIs through configuration rather
+than source-code changes, land raw responses, transform data through a
+Medallion architecture, apply data-quality rules, maintain ingestion
+checkpoints, and validate data consistency across processing layers.
 
 ---
 
@@ -74,36 +79,40 @@ Gold
 
 ### Metadata-driven ingestion
 
-API behavior is controlled through metadata rather than hard-coded API-specific ingestion logic.
+API behavior is controlled through metadata rather than hard-coded
+API-specific ingestion logic.
 
 Metadata controls concepts such as:
 
-- API endpoint
-- HTTP method
-- authentication type
-- authentication configuration
-- headers
-- query parameters
-- pagination strategy
-- page size
-- cursor field
-- cursor parameter
-- load type
-- incremental configuration
-- landing configuration
-- Bronze configuration
-- record path
-- enabled/disabled state
+* API endpoint
+* HTTP method
+* authentication type
+* authentication configuration
+* headers
+* query parameters
+* pagination strategy
+* page size
+* cursor field
+* cursor parameter
+* load type
+* incremental configuration
+* landing configuration
+* Bronze configuration
+* record path
+* enabled/disabled state
 
-This allows additional APIs to be onboarded through configuration while reusing the same ingestion framework.
+This allows additional APIs to be onboarded through configuration while
+reusing the same ingestion framework.
 
 ### Authentication
 
 The ingestion framework supports configurable authentication metadata.
 
-Authentication configuration is separated from ingestion logic so that the ingestion service does not need API-specific authentication code.
+Authentication configuration is separated from ingestion logic so that
+the ingestion service does not need API-specific authentication code.
 
-Secrets and credentials should be stored in secure secret-management systems and must never be committed to source control.
+Secrets and credentials should be stored in secure secret-management
+systems and must never be committed to source control.
 
 ### Pagination
 
@@ -111,19 +120,20 @@ The platform implements a pagination strategy pattern.
 
 Supported strategies include:
 
-- `NONE`
-- `OFFSET`
-- `CURSOR`
+* `NONE`
+* `OFFSET`
+* `CURSOR`
 
-The pagination factory selects the appropriate implementation from API metadata.
+The pagination factory selects the appropriate implementation from API
+metadata.
 
 Cursor pagination supports:
 
-- configurable cursor field
-- configurable cursor parameter
-- initial query parameters
-- next-page cursor handling
-- persisted cursor state
+* configurable cursor field
+* configurable cursor parameter
+* initial query parameters
+* next-page cursor handling
+* persisted cursor state
 
 Pagination behavior is covered by automated tests.
 
@@ -133,12 +143,12 @@ The HTTP layer implements retry behavior for transient failures.
 
 Retryable conditions include common transient HTTP status codes such as:
 
-- `408`
-- `429`
-- `500`
-- `502`
-- `503`
-- `504`
+* `408`
+* `429`
+* `500`
+* `502`
+* `503`
+* `504`
 
 Connection and timeout failures are also handled through retry logic.
 
@@ -154,24 +164,27 @@ The retry policy is configurable and covered by automated tests.
 
 The Landing layer stores raw API responses before structured processing.
 
-The ingestion service writes API payloads to the configured landing location.
+The ingestion service writes API payloads to the configured landing
+location.
 
-The design preserves the raw response so that downstream processing can be separated from API extraction.
+The design preserves the raw response so that downstream processing can
+be separated from API extraction.
 
 ### Bronze
 
-Bronze is implemented using Lakeflow Declarative Pipelines and JSON Auto Loader.
+Bronze is implemented using Lakeflow Declarative Pipelines and JSON Auto
+Loader.
 
 The Bronze pipeline:
 
-- reads API landing files
-- uses Auto Loader
-- supports schema evolution
-- preserves source-file metadata
-- preserves API identifiers
-- records ingestion timestamps
-- flattens configured record paths
-- writes structured Bronze tables
+* reads API landing files
+* uses Auto Loader
+* supports schema evolution
+* preserves source-file metadata
+* preserves API identifiers
+* records ingestion timestamps
+* flattens configured record paths
+* writes structured Bronze tables
 
 Example Bronze table:
 
@@ -187,26 +200,27 @@ Silver converts Bronze data into business-ready, conformed datasets.
 
 The current implementation includes examples such as:
 
-- `fact_order`
-- `dim_customer`
-- `dim_product`
+* `fact_order`
+* `dim_customer`
+* `dim_product`
 
 The Silver transformation layer performs operations including:
 
-- latest-record selection
-- deduplication
-- nested-data flattening
-- array explosion
-- dimension enrichment
-- deterministic surrogate-key generation
-- type conversion
-- business-key handling
+* latest-record selection
+* deduplication
+* nested-data flattening
+* array explosion
+* dimension enrichment
+* deterministic surrogate-key generation
+* type conversion
+* business-key handling
 
 ### Order example
 
 An API order can contain multiple products.
 
-The Silver `fact_order` model converts this structure into order-line grain:
+The Silver `fact_order` model converts this structure into order-line
+grain:
 
 | Column | Description |
 |---|---|
@@ -239,12 +253,12 @@ One row per order.
 
 Metrics include:
 
-- customer
-- order date
-- status
-- order total
-- line count
-- units sold
+* customer
+* order date
+* status
+* order total
+* line count
+* units sold
 
 #### `gold_customer_sales`
 
@@ -252,10 +266,10 @@ One row per customer.
 
 Metrics include:
 
-- order count
-- sales amount
-- units sold
-- customer attributes
+* order count
+* sales amount
+* units sold
+* customer attributes
 
 #### `gold_product_sales`
 
@@ -263,25 +277,28 @@ One row per product.
 
 Metrics include:
 
-- order count
-- units sold
-- first order date
-- last order date
-- product attributes
+* order count
+* units sold
+* first order date
+* last order date
+* product attributes
 
-Product-level revenue is intentionally not calculated because the source API provides order-level totals rather than product-level monetary amounts.
+Product-level revenue is intentionally not calculated because the source
+API provides order-level totals rather than product-level monetary
+amounts.
 
 ---
 
 ## Data Quality
 
-The Silver `fact_order` dataset currently has five Lakeflow expectations:
+The Silver `fact_order` dataset currently has five Lakeflow
+expectations:
 
-- `valid_order_id`
-- `valid_line_number`
-- `valid_customer_id`
-- `valid_product_id`
-- `valid_quantity`
+* `valid_order_id`
+* `valid_line_number`
+* `valid_customer_id`
+* `valid_product_id`
+* `valid_quantity`
 
 The quantity expectation requires:
 
@@ -290,7 +307,8 @@ quantity IS NOT NULL
 AND quantity > 0
 ```
 
-The expectations use failure semantics so invalid records do not silently enter the trusted Silver dataset.
+The expectations use failure semantics so invalid records do not
+silently enter the trusted Silver dataset.
 
 The current deployed pipeline execution verified:
 
@@ -302,21 +320,23 @@ The current deployed pipeline execution verified:
 | `valid_product_id` | 0 |
 | `valid_quantity` | 0 |
 
-Additional data-quality coverage can be added to other datasets as the platform expands.
+Additional data-quality coverage can be added to other datasets as the
+platform expands.
 
 ---
 
 ## Reconciliation
 
-The platform includes automated integration tests that validate data consistency across Medallion layers.
+The platform includes automated integration tests that validate data
+consistency across Medallion layers.
 
 ### Bronze to Silver
 
 The reconciliation verifies:
 
-- latest Bronze order population
-- Silver distinct order population
-- Silver order-line business-key uniqueness
+* latest Bronze order population
+* Silver distinct order population
+* Silver order-line business-key uniqueness
 
 Current validated result:
 
@@ -345,10 +365,10 @@ Bronze orders = Silver orders
 
 The reconciliation verifies:
 
-- Silver distinct orders vs Gold order KPI rows
-- Silver units vs Gold units
-- Silver order-level sales vs Gold sales
-- Gold order-key uniqueness
+* Silver distinct orders vs Gold order KPI rows
+* Silver units vs Gold units
+* Silver order-level sales vs Gold sales
+* Gold order-key uniqueness
 
 Current validated result:
 
@@ -372,7 +392,8 @@ SUM(fact_order.order_total)
 
 directly with Gold sales.
 
-Because `order_total` is an order-level value repeated on every Silver order line, summing it at line grain would multiply the total.
+Because `order_total` is an order-level value repeated on every Silver
+order line, summing it at line grain would multiply the total.
 
 Example:
 
@@ -382,7 +403,8 @@ Example:
 | Correct order-level sales | 201,161 |
 | Gold sales | 201,161 |
 
-The reconciliation therefore first reduces Silver to one `order_total` per `order_id`.
+The reconciliation therefore first reduces Silver to one `order_total`
+per `order_id`.
 
 This protects against a common order-line aggregation error.
 
@@ -394,43 +416,49 @@ The platform includes a checkpoint model, repository, and service.
 
 The checkpoint model supports:
 
-- `CURSOR`
-- `WATERMARK`
+* `CURSOR`
+* `WATERMARK`
 
-The checkpoint table is designed to persist ingestion state for API sources.
+The checkpoint table is designed to persist ingestion state for API
+sources.
 
 The checkpoint service supports:
 
-- retrieving the latest checkpoint
-- cursor state
-- watermark state
-- initial-load values
-- watermark overlap handling
-- API-specific checkpoint lookup
-- Delta-backed persistence
+* retrieving the latest checkpoint
+* cursor state
+* watermark state
+* initial-load values
+* watermark overlap handling
+* API-specific checkpoint lookup
+* Delta-backed persistence
 
 For `FULL` loads, checkpoint persistence is intentionally not required.
 
 ### Current status
 
-Cursor checkpoint behavior is implemented and unit-tested.
+The checkpoint framework and cursor checkpoint implementation are
+complete and unit-tested.
 
-A complete live incremental API E2E scenario is still a planned enhancement because the currently enabled API metadata uses `FULL` loads rather than a live incremental/cursor source.
+The currently enabled API metadata uses `FULL` loads. Live incremental
+API end-to-end validation is therefore listed as a planned enhancement.
 
 ---
 
 ## Current metadata examples
 
-The current project contains metadata-driven API configurations for examples including:
+The current project contains metadata-driven API configurations for
+examples including:
 
-- OpenAPI Orders
-- OpenAPI Products
-- OpenAPI Users
-- Salesforce Opportunity
+* OpenAPI Orders
+* OpenAPI Products
+* OpenAPI Users
+* Salesforce Opportunity
 
-The metadata model separates source configuration from transformation logic.
+The metadata model separates source configuration from transformation
+logic.
 
-This means ingestion behavior can be changed through metadata instead of creating separate ingestion implementations for every API.
+This means ingestion behavior can be changed through metadata instead of
+creating separate ingestion implementations for every API.
 
 ---
 
@@ -546,11 +574,11 @@ enterprise_api_ingestion_platform/
 
 Install:
 
-- Python 3.10-3.12
-- `uv`
-- Databricks CLI
-- Git
-- Access to an appropriate Databricks workspace for integration tests
+* Python 3.10-3.12
+* `uv`
+* Databricks CLI
+* Git
+* Access to an appropriate Databricks workspace for integration tests
 
 ### Install dependencies
 
@@ -611,13 +639,13 @@ databricks bundle summary -t dev
 
 The bundle manages:
 
-- API ingestion job
-- Bronze pipeline
-- Silver pipeline
-- Gold pipeline
-- Landing volume
-- Python package artifacts
-- pipeline configuration
+* API ingestion job
+* Bronze pipeline
+* Silver pipeline
+* Gold pipeline
+* Landing volume
+* Python package artifacts
+* pipeline configuration
 
 ---
 
@@ -638,48 +666,53 @@ silver_pipeline
 gold_pipeline
 ```
 
-Each downstream stage depends on successful completion of the previous stage.
+Each downstream stage depends on successful completion of the previous
+stage.
 
-The development schedule is intentionally kept paused while development and validation are performed manually.
+The development schedule is intentionally kept paused while development
+and validation are performed manually.
 
 ---
 
 ## Testing status
 
-The current automated test suite contains:
+The project has been validated through unit, application-layer, and
+Databricks integration testing.
+
+### Current verified local validation
 
 ```text
-121 passed
-0 failed
-22 warnings
+uv run ruff check .
+All checks passed
+
+uv run pytest -q --ignore=tests/silver --ignore=tests/gold
+89 passed
+
+uv run pytest -q tests/landing tests/ingestion
+6 passed
 ```
 
-Latest full-suite runtime was approximately:
-
-```text
-3 minutes 22 seconds
-```
-
-The warnings are dependency deprecation warnings originating from the PySpark ecosystem and do not currently cause test failures.
+The Silver and Gold integration tests require live Databricks compute for
+`DatabricksSession` initialization. When that runtime is not available
+locally, those tests cannot execute as ordinary local unit tests.
 
 ### Test coverage includes
 
-- checkpoint model
-- checkpoint repository
-- checkpoint service
-- ingestion service
-- landing service
-- metadata reader
-- cursor pagination
-- pagination factory
-- retry policy
-- HTTP retry behavior
-- Silver transformations
-- Gold transformations
-- Bronze to Silver reconciliation
-- Silver to Gold reconciliation
-
----
+* checkpoint model
+* checkpoint repository
+* checkpoint service
+* ingestion service
+* landing service
+* metadata reader
+* cursor pagination
+* pagination factory
+* retry policy
+* HTTP retry behavior
+* Silver transformations
+* Gold transformations
+* Bronze to Silver reconciliation
+* Silver to Gold reconciliation
+* Lakeflow data-quality expectations
 
 ## Engineering principles
 
@@ -693,35 +726,39 @@ API-specific behavior belongs in metadata whenever practical.
 
 Responsibilities are separated across:
 
-- Metadata
-- Ingestion
-- HTTP
-- Retry
-- Pagination
-- Landing
-- Checkpoint
-- Bronze
-- Silver
-- Gold
-- Data Quality
-- Testing
-- Deployment
+* Metadata
+* Ingestion
+* HTTP
+* Retry
+* Pagination
+* Landing
+* Checkpoint
+* Bronze
+* Silver
+* Gold
+* Data Quality
+* Testing
+* Deployment
 
 ### Deterministic transformations
 
-Surrogate keys and business keys are designed to provide deterministic behavior where required.
+Surrogate keys and business keys are designed to provide deterministic
+behavior where required.
 
 ### Explicit data contracts
 
-Transformation logic operates against defined schemas and expected business grains.
+Transformation logic operates against defined schemas and expected
+business grains.
 
 ### Fail-fast data quality
 
-Critical Silver validation rules use failure semantics rather than allowing invalid records to silently propagate.
+Critical Silver validation rules use failure semantics rather than
+allowing invalid records to silently propagate.
 
 ### Reconciliation at business grain
 
-Reconciliation is performed at the correct semantic grain rather than relying on naive row-count or line-level monetary comparisons.
+Reconciliation is performed at the correct semantic grain rather than
+relying on naive row-count or line-level monetary comparisons.
 
 ---
 
@@ -731,19 +768,21 @@ This repository is intended to be public.
 
 Do not commit:
 
-- access tokens
-- passwords
-- client secrets
-- API keys
-- Databricks personal access tokens
-- OAuth tokens
-- connection strings containing credentials
-- production secret values
-- private workspace configuration
+* access tokens
+* passwords
+* client secrets
+* API keys
+* Databricks personal access tokens
+* OAuth tokens
+* connection strings containing credentials
+* production secret values
+* private workspace configuration
 
-Use environment variables, Databricks secret scopes, managed identities, service principals, or other appropriate secret-management mechanisms.
+Use environment variables, Databricks secret scopes, managed identities,
+service principals, or other appropriate secret-management mechanisms.
 
-If a credential is accidentally exposed, revoke or rotate it immediately.
+If a credential is accidentally exposed, revoke or rotate it
+immediately.
 
 ---
 
@@ -751,38 +790,80 @@ If a credential is accidentally exposed, revoke or rotate it immediately.
 
 ### Completed
 
-- Metadata-driven ingestion framework
-- API authentication framework
-- Retry framework
-- Pagination framework
-- Landing layer
-- Bronze Lakeflow pipeline
-- Silver Lakeflow pipeline
-- Gold Lakeflow pipeline
-- Unity Catalog table architecture
-- Lakeflow data-quality expectations
-- Cursor checkpoint implementation
-- Bronze to Silver reconciliation
-- Silver to Gold order-level reconciliation
-- Automated testing
-- Ruff validation
-- Databricks Asset Bundle validation
-- Databricks Asset Bundle deployment
-- Git/GitHub workflow
+* Metadata-driven ingestion framework
+* Configurable API metadata model
+* API authentication abstraction
+* HTTP client abstraction
+* Transient HTTP retry handling
+* Configurable retry policy
+* NONE pagination
+* OFFSET pagination
+* CURSOR pagination
+* Pagination strategy factory
+* Raw API landing layer
+* Storage writer abstraction
+* Databricks-managed Unity Catalog Volume landing
+* Bronze Lakeflow Declarative Pipeline
+* Auto Loader ingestion
+* Bronze source metadata preservation
+* Bronze API identifier preservation
+* Bronze ingestion timestamps
+* Configurable Bronze record-path handling
+* Silver Lakeflow Declarative Pipeline
+* Order-line fact modeling
+* Customer dimension modeling
+* Product dimension modeling
+* Nested JSON flattening
+* Array explosion
+* Deduplication
+* Deterministic surrogate-key generation
+* Business-key handling
+* Dimension enrichment
+* Type conversion
+* Gold order KPI model
+* Gold customer sales model
+* Gold product sales model
+* Lakeflow data-quality expectations
+* Fail-fast critical Silver validation
+* Cursor checkpoint implementation
+* Watermark checkpoint model and framework
+* Initial-load checkpoint handling
+* Watermark overlap handling
+* API-specific checkpoint lookup
+* Delta-backed checkpoint persistence
+* Bronze-to-Silver reconciliation
+* Silver-to-Gold reconciliation
+* Automated test coverage
+* Ruff code-quality validation
+* Databricks Asset Bundle validation
+* Databricks Asset Bundle deployment
+* Databricks job orchestration
+* Ingestion → Bronze → Silver → Gold dependency chain
+* Unity Catalog table architecture
+* Application-level execution audit logging
+* Execution run identifiers
+* Execution duration tracking
+* Records-read metrics
+* Pages-read metrics
+* Landing-file tracking
+* Landing-file-size tracking
+* Execution status tracking
+* Schema-version metadata tracking
+* Git version control
+* GitHub repository integration
+* Public-portfolio documentation
 
 ### Planned enhancements
 
-- Live incremental API end-to-end validation
-- Full watermark checkpoint persistence validation
-- Customer-level Gold reconciliation
-- Product-level Gold reconciliation
-- Expanded data-quality coverage
-- Automated CI/CD workflow
-- Additional operational monitoring
-- Production deployment hardening
-- Extended documentation and operational runbooks
-
----
+* Rich custom success/failure notifications
+* Failure diagnostics and retry metrics propagation
+* Operational SLA/status monitoring
+* Formal end-to-end reconciliation reporting
+* Automatic schema-change detection and schema-version management
+* Live incremental API end-to-end validation
+* Production deployment hardening
+* CI/CD automation with GitHub Actions
+* Extended documentation and operational runbooks
 
 ## Example end-to-end result
 
@@ -828,7 +909,9 @@ Silver order-level sales = Gold sales
 201,161 = 201,161
 ```
 
-This demonstrates that the current implementation preserves order populations and key business metrics across the Bronze, Silver, and Gold layers.
+This demonstrates that the current implementation preserves order
+populations and key business metrics across the Bronze, Silver, and Gold
+layers.
 
 ---
 
@@ -836,7 +919,8 @@ This demonstrates that the current implementation preserves order populations an
 
 The goal is not simply to build another API-to-table pipeline.
 
-The platform demonstrates how to build a reusable data ingestion framework where:
+The platform demonstrates how to build a reusable data ingestion
+framework where:
 
 ```text
 New API
@@ -866,34 +950,19 @@ Data Quality
 Automated Reconciliation
 ```
 
-The architecture reduces API-specific code, centralizes ingestion behavior, improves consistency across sources, and provides automated validation of downstream business data.
-
----
-
-## Future direction
-
-Potential extensions include:
-
-- additional API authentication mechanisms
-- production-grade incremental/watermark ingestion
-- CDC-oriented processing
-- schema contract validation
-- automated anomaly detection
-- richer observability
-- data lineage enhancements
-- CI/CD deployment promotion
-- environment-specific configuration
-- automated data-quality reporting
-- operational alerting
-- broader Gold semantic models
+The architecture reduces API-specific code, centralizes ingestion
+behavior, improves consistency across sources, and provides automated
+validation of downstream business data.
 
 ---
 
 ## License
 
-This project is currently maintained as a portfolio and engineering demonstration project.
+This project is currently maintained as a portfolio and engineering
+demonstration project.
 
-Add an explicit open-source license before accepting external contributions or redistributing the project.
+Add an explicit open-source license before accepting external
+contributions or redistributing the project.
 
 ---
 
@@ -903,15 +972,15 @@ Add an explicit open-source license before accepting external contributions or r
 
 Data Engineering project focused on:
 
-- Azure Databricks
-- Python
-- PySpark
-- Lakeflow Declarative Pipelines
-- Delta Lake
-- Unity Catalog
-- Metadata-driven architecture
-- API ingestion
-- Data Quality
-- Data Reconciliation
-- Databricks Asset Bundles
-- Git/GitHub workflows
+* Azure Databricks
+* Python
+* PySpark
+* Lakeflow Declarative Pipelines
+* Delta Lake
+* Unity Catalog
+* Metadata-driven architecture
+* API ingestion
+* Data Quality
+* Data Reconciliation
+* Databricks Asset Bundles
+* Git/GitHub workflows
