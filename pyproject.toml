@@ -21,6 +21,7 @@ dev = [
 
 [project.scripts]
 main = "enterprise_api_ingestion_platform.main:main"
+send_ingestion_notification = "enterprise_api_ingestion_platform.notification.main:main"
 
 [build-system]
 requires = ["hatchling"]

@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS workspace.audit.job_execution
 (
     run_id STRING,
+	
+	job_run_id STRING,
 
     api_name STRING,
 

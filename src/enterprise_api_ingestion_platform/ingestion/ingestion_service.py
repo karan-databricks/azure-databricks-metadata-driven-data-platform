@@ -37,6 +37,7 @@ class IngestionService:
     def run(
         self,
         metadata: ApiMetadata,
+        job_run_id: str | None = None,
     ) -> None:
         """
         Executes a single API ingestion.
@@ -131,6 +132,7 @@ class IngestionService:
 
             self._audit_logger.log_execution(
                 run_id=run_id,
+                job_run_id=job_run_id,
                 api_name=metadata.api_name,
                 job_name="generic_api_ingestion_job",
                 start_time=start_time,
