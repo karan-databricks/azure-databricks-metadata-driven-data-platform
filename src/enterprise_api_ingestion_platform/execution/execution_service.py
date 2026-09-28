@@ -27,21 +27,29 @@ class ExecutionService:
         self._logger = get_logger(__name__)
 
     def execute_api(
-        self,
-        metadata: ApiMetadata,
+           self,
+           metadata: ApiMetadata,
+           job_run_id: str | None = None,
     ) -> None:
         """
         Executes ingestion for a single API.
         """
-
         self._logger.info(
-            "Executing API: %s",
+            "Executing API: %s job_run_id=%s",
             metadata.api_name,
+            job_run_id,
         )
 
-        self._ingestion_service.run(metadata)
+        self._ingestion_service.run(
+            metadata,
+            job_run_id=job_run_id,
+        )
 
-    def execute_all(self) -> None:
+    def execute_all(
+        self,
+        job_run_id: str | None = None,
+    ) -> None:
+        
         """
         Executes all enabled APIs.
         """
@@ -66,7 +74,10 @@ class ExecutionService:
                 metadata.api_name,
             )
 
-            self.execute_api(metadata)
+            self.execute_api(
+                metadata,
+                job_run_id=job_run_id,
+            )
 
         self._logger.info(
             "Completed execution of all enabled APIs."

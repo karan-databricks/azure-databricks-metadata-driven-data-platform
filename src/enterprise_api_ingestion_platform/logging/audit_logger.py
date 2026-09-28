@@ -26,6 +26,7 @@ class AuditLogger:
     def log_execution(
         self,
         run_id: str,
+        job_run_id: str | None,
         api_name: str,
         job_name: str,
         start_time,
@@ -57,6 +58,7 @@ class AuditLogger:
         schema = StructType(
             [
                 StructField("run_id", StringType(), False),
+                StructField("job_run_id", StringType(), True),
                 StructField("api_name", StringType(), False),
                 StructField("job_name", StringType(), False),
                 StructField("start_time", TimestampType(), False),
@@ -83,6 +85,7 @@ class AuditLogger:
                 [
                     (
                         run_id,
+                        job_run_id,
                         api_name,
                         job_name,
                         start_time,

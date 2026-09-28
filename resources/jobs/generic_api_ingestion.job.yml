@@ -160,7 +160,8 @@ resources:
               api_name: "{{job.parameters.api_name}}" 
               landing_catalog: "{{job.parameters.landing_catalog}}" 
               landing_schema: "{{job.parameters.landing_schema}}" 
-              landing_volume: "{{job.parameters.landing_volume}}" 
+              landing_volume: "{{job.parameters.landing_volume}}"
+              job_run_id: "{{job.run_id}}"              
  
         - task_key: bronze_pipeline 
  

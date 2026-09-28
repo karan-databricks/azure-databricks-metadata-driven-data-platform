@@ -78,6 +78,13 @@ def parse_arguments() -> argparse.Namespace:
         required=True,
         help="Unity Catalog landing volume name.",
     )
+    
+    parser.add_argument(
+    "--job_run_id",
+    required=False,
+    default=None,
+    help="Databricks Job Run ID.",
+    )
 
     return parser.parse_args()
 
@@ -183,7 +190,9 @@ def main() -> None:
         logger.info(
             "Executing all enabled APIs.",
         )
-        execution_service.execute_all()
+        execution_service.execute_all(
+            job_run_id=args.job_run_id,
+        )
     else:
         logger.info(
             "Executing API: %s",
@@ -196,6 +205,7 @@ def main() -> None:
 
         execution_service.execute_api(
             metadata,
+            job_run_id=args.job_run_id,
         )
 
         logger.info(
